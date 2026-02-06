@@ -1,6 +1,6 @@
 package com.example.service;
 
-import com.example.controller.StudentPage;
+import com.example.model.StudentPage;
 import com.example.entity.Address;
 import com.example.entity.Student;
 import com.example.entity.Subject;
@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
@@ -70,6 +71,10 @@ public class StudentService {
                 .toList();
     }
 
+    public Optional<Student> getStudentById(long id) {
+        return studentRepository.findById(id);
+    }
+
     public List<Subject> getSubjectsByStudentIds(List<Long> studentIds) {
         return subjectRepository.findAllByStudentIdIn(studentIds);
     }
@@ -92,9 +97,9 @@ public class StudentService {
                 : studentRepository.findAfterCursor(afterId, pageable);
 
         boolean hasNextPage = students.getContent().size() > limit;
-        List<com.example.controller.Student> mappedStudents = students
+        List<com.example.model.Student> mappedStudents = students
                 .stream()
-                .map(e -> { return new com.example.controller.Student(e.getId(), e.getFirstName());})
+                .map(e -> { return new com.example.model.Student(e.getId(), e.getFirstName());})
                 .toList();
 
         if (hasNextPage) {
@@ -104,6 +109,7 @@ public class StudentService {
         return new StudentPage(mappedStudents, hasNextPage, (int) students.getTotalElements());
     }
 
+    @Transactional
     public Student createStudent(CreateStudentRequest createStudentRequest) {
         Student student = new Student(createStudentRequest);
 
@@ -136,6 +142,25 @@ public class StudentService {
         student.setLearningSubjects(subjectsList);
 
         return student;
+    }
+
+    @Transactional
+    public Student createStudent(Student student) {
+        return studentRepository.save(student);
+    }
+
+    @Transactional
+    public Student updateStudent(Student student) {
+        return studentRepository.save(student);
+    }
+
+    @Transactional
+    public boolean deleteStudent(Long id) {
+        if (studentRepository.existsById(id)) {
+            studentRepository.deleteById(id);
+            return true;
+        }
+        return false;
     }
 
 }

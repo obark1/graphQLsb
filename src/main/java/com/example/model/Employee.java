@@ -1,4 +1,4 @@
-package com.example.controller;
+package com.example.model;
 
 import com.example.util.LocalDateTimeDeserializerCustom;
 import com.example.views.Views;

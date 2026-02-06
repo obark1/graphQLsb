@@ -1,4 +1,4 @@
-package com.example.controller;
+package com.example.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -6,6 +6,6 @@ import lombok.Data;
 @AllArgsConstructor
 @Data
 public class StudentEdge {
-    com.example.controller.Student node;
+    Student node;
     String cursor;
 }

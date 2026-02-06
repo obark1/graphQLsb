@@ -49,3 +49,40 @@ type StudentResponse {
     learningSubjects(subjectNames : [SubjectNameFilter]): [Subject]
 }
 
+# Input types for mutations
+input CreateStudentWithSubjectsInput {
+    firstName: String!
+    lastName: String!
+    email: String!
+    street: String
+    city: String
+    subjects: [CreateSubjectInput!]
+}
+
+input CreateSubjectInput {
+    subjectName: String!
+    marksObtained: Float
+}
+
+input UpdateStudentInput {
+    id: ID!
+    firstName: String
+    lastName: String
+    email: String
+    street: String
+    city: String
+    subjects: [CreateSubjectInput]
+}
+
+# Mutations
+type Mutation {
+    createStudentWithSubjects(input: CreateStudentWithSubjectsInput!): StudentResponse
+    updateStudent(input: UpdateStudentInput!): StudentResponse
+    deleteStudent(id: ID!): DeleteResult
+}
+
+type DeleteResult {
+    success: Boolean!
+    message: String
+    deletedId: ID
+}

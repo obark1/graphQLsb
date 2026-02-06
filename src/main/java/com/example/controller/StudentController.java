@@ -1,8 +1,10 @@
 package com.example.controller;
 
+import com.example.entity.Address;
 import com.example.entity.Student;
 import com.example.entity.Subject;
 import com.example.enums.SubjectNameFilter;
+import com.example.model.*;
 import com.example.response.StudentResponse;
 import com.example.service.StudentService;
 import com.example.util.CursorUtil;
@@ -10,6 +12,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.graphql.data.method.annotation.Argument;
+import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.graphql.data.method.annotation.SchemaMapping;
 import org.springframework.stereotype.Controller;
@@ -103,4 +106,121 @@ public class StudentController {
 
         return studentResponseList;
     }
+
+    @MutationMapping
+    public StudentResponse createStudentWithSubjects(
+            @Argument CreateStudentWithSubjectsInput input
+    ) {
+        log.info("Creating student with {} subjects",
+                input.getSubjects() != null ? input.getSubjects().size() : 0);
+
+        Student student = new Student();
+        student.setFirstName(input.getFirstName());
+        student.setLastName(input.getLastName());
+        student.setEmail(input.getEmail());
+
+        Address address = new Address();
+        address.setStreet(input.getStreet());
+        address.setCity(input.getCity());
+        student.setAddress(address);
+
+        // Add subjects
+        if (input.getSubjects() != null) {
+            List<Subject> subjects = input.getSubjects().stream()
+                    .map(subInput -> {
+                        Subject subject = new Subject();
+                        subject.setSubjectName(subInput.getSubjectName());
+                        subject.setMarksObtained(subInput.getMarksObtained());
+                        subject.setStudent(student);  // Set bidirectional relationship
+                        return subject;
+                    })
+                    .toList();
+            student.setLearningSubjects(subjects);
+        }
+
+        Student saved = studentService.createStudent(student);
+        return new StudentResponse(saved);
+    }
+
+    @Transactional
+    @MutationMapping
+    public StudentResponse updateStudent(@Argument UpdateStudentInput input) {
+        log.info("Updating student ID: {}", input.getId());
+
+        Student existing = studentService.getStudentById(input.getId())
+                .orElseThrow(() -> new RuntimeException("Student not found: " + input.getId()));
+
+        // Update only fields that are provided
+        if (input.getFirstName() != null) {
+            existing.setFirstName(input.getFirstName());
+        }
+        if (input.getLastName() != null) {
+            existing.setLastName(input.getLastName());
+        }
+        if (input.getEmail() != null) {
+            existing.setEmail(input.getEmail());
+        }
+        if (input.getStreet() != null || input.getCity() != null) {
+            Address address = existing.getAddress() != null
+                    ? existing.getAddress()
+                    : new Address();
+
+            if (input.getStreet() != null) {
+                address.setStreet(input.getStreet());
+            }
+            if (input.getCity() != null) {
+                address.setCity(input.getCity());
+            }
+            existing.setAddress(address);
+        }
+
+        if (input.getSubjects() != null && !input.getSubjects().isEmpty()) {
+            List<Subject> newSubjects = new ArrayList<>();
+            for (com.example.model.Subject subject : input.getSubjects()) {
+                Subject newSubject = new Subject();
+                newSubject.setSubjectName(subject.getSubjectName());
+                newSubject.setMarksObtained(subject.getMarksObtained());
+                newSubject.setStudent(existing);
+
+                newSubjects.add(newSubject);
+            }
+            existing.getLearningSubjects().clear();
+            existing.getLearningSubjects().addAll(newSubjects);
+        }
+
+        Student updated = studentService.updateStudent(existing);
+        return new StudentResponse(updated);
+    }
+
+    @MutationMapping
+    public DeleteResult deleteStudent(@Argument Long id) {
+        log.info("Deleting student ID: {}", id);
+
+        try {
+            boolean existed = studentService.deleteStudent(id);
+
+            if (existed) {
+                return new DeleteResult(
+                        true,
+                        "Student deleted successfully",
+                        id
+                );
+            } else {
+                return new DeleteResult(
+                        false,
+                        "Student not found",
+                        null
+                );
+            }
+        } catch (Exception e) {
+            log.error("Error deleting student", e);
+            return new DeleteResult(
+                    false,
+                    "Error deleting student: " + e.getMessage(),
+                    null
+            );
+        }
+    }
+
 }
+

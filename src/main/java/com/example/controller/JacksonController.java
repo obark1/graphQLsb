@@ -1,5 +1,6 @@
 package com.example.controller;
 
+import com.example.model.Employee;
 import com.example.views.Views;
 import com.fasterxml.jackson.annotation.JsonView;
 import org.springframework.http.ResponseEntity;

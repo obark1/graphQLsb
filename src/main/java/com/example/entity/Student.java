@@ -29,11 +29,14 @@ public class Student {
 	@Column(name = "email")
 	private String email;
 	
-	@OneToOne
+	@OneToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "address_id")
 	private Address address;
 	
-	@OneToMany(mappedBy = "student", fetch = FetchType.LAZY)
+	@OneToMany(mappedBy = "student",
+			fetch = FetchType.LAZY,
+			cascade = CascadeType.ALL,
+			orphanRemoval = true)
 	private List<Subject> learningSubjects;
 	
 	public Student (CreateStudentRequest createStudentRequest) {
