@@ -1,0 +1,51 @@
+enum SubjectNameFilter {
+    Java,
+    MySQL,
+    MongoDB
+}
+
+type Subject {
+    subjectName: SubjectNameFilter
+    marksObtained: Float
+}
+
+type Query {
+    student(id: ID): StudentResponse
+    allStudents(offset: Int, limit: Int): [StudentResponse]
+    # students(city: String): [StudentResponse]
+    students(first: Int, after: String): StudentConnection
+}
+
+type StudentConnection {
+    edges: [StudentEdge]
+    pageInfo: PageInfo
+    totalCount: Int
+}
+
+type StudentEdge {
+    node: Student        # ← The actual student data
+    cursor: String       # ← Position in the list for pagination
+}
+
+type Student {
+    id: ID
+    firstName: String
+}
+
+type PageInfo {
+    hasNextPage: Boolean
+    hasPreviousPage: Boolean
+    startCursor: String
+    endCursor: String
+}
+
+type StudentResponse {
+    id: ID
+    firstName: String
+    lastName: String
+    email: String
+    street: String
+    city: String
+    learningSubjects(subjectNames : [SubjectNameFilter]): [Subject]
+}
+
