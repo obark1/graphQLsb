@@ -18,6 +18,7 @@ type Query {
 
 type StudentConnection {
     edges: [StudentEdge]
+    nodes: [Student]
     pageInfo: PageInfo
     totalCount: Int
 }

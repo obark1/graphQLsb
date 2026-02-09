@@ -12,6 +12,4 @@ public class StudentPage {
     private boolean hasNextPage;
     private int count;
 
-
-    // Getters
 }
