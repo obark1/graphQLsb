@@ -74,6 +74,7 @@ public class StudentController {
     }
 
     @QueryMapping
+    @Transactional
     StudentConnection students(@Argument Integer first, @Argument String after) {
         Long afterId = CursorUtil.decodeCursor(after);
         StudentPage page = studentService.getStudents(first, afterId);
@@ -94,6 +95,7 @@ public class StudentController {
 
     }
 
+    @Transactional
     @QueryMapping(name = "allStudents")
     public List<StudentResponse> getAllStudents(@Argument Integer offset, @Argument Integer limit) {
         log.info("getAllStudents called");
